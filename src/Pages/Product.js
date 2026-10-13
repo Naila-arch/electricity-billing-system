@@ -1,4 +1,3 @@
-
 const productslist = [
   {
     serialNo: 1,
@@ -102,4 +101,3 @@ const productslist = [
 ]
 
 export default productslist
-

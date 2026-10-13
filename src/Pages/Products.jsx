@@ -1,17 +1,70 @@
 
-const productslist = [
-  { serialNo: 1, id: 1, customerName: "Naila", meterNumber: "103456", units: 50, dueDate: "2026-10-15", status: "Unpaid" },
-  { serialNo: 2, id: 2, customerName: "Ahmed Ali", meterNumber: "125456", units: 70, dueDate: "2026-10-15", status: "Unpaid" },
-  { serialNo: 3, id: 3, customerName: "Zeeshan", meterNumber: "163456", units: 350, dueDate: "2026-10-15", status: "paid" },
-  { serialNo: 4, id: 4, customerName: "Isha", meterNumber: "183156", units: 550, dueDate: "2026-10-15", status: "paid" },
-  { serialNo: 5, id: 5, customerName: "Asad", meterNumber: "143456", units: 100, dueDate: "2026-10-15", status: "Unpaid" },
-  { serialNo: 6, id: 6, customerName: "Adil", meterNumber: "133456", units: 150, dueDate: "2026-10-15", status: "paid" },
-  { serialNo: 7, id: 7, customerName: "Faisal", meterNumber: "133406", units: 140, dueDate: "2026-10-15", status: "paid" },
-  { serialNo: 8, id: 8, customerName: "Tayab", meterNumber: "135406", units: 120, dueDate: "2026-10-15", status: "paid" },
-  { serialNo: 9, id: 9, customerName: "Hamza", meterNumber: "143856", units: 300, dueDate: "2026-10-15", status: "Unpaid" },
-  { serialNo: 10, id: 10, customerName: "Ali Hassan", meterNumber: "193856", units: 510, dueDate: "2026-10-15", status: "Unpaid" },
-  { serialNo: 11, id: 11, customerName: "Ismail", meterNumber: "188856", units: 910, dueDate: "2026-10-15", status: "paid" },
+const products = [
+  {
+    id: 1,
+    name: 'Residential Plan',
+    ratePerUnit: 15,
+    description: 'For home electricity customers',
+  },
+  {
+    id: 2,
+    name: 'Commercial Plan',
+    ratePerUnit: 20,
+    description: 'For shops and offices',
+  },
+  {
+    id: 3,
+    name: 'Industrial Plan',
+    ratePerUnit: 25,
+    description: 'For industrial electricity usage',
+  },
 ]
 
-export default productslist
+function Products() {
+  return (
+    <div>
+      <h1>Electricity Plans</h1>
+      <p>View electricity plans and their rates.</p>
 
+      <div className="dashboard-box">
+        <h2>Available Plans</h2>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              textAlign: 'left',
+            }}
+          >
+            <thead>
+              <tr>
+                <th style={{ padding: '12px' }}>ID</th>
+                <th style={{ padding: '12px' }}>Plan Name</th>
+                <th style={{ padding: '12px' }}>Rate Per Unit</th>
+                <th style={{ padding: '12px' }}>Description</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.id}>
+                  <td style={{ padding: '12px' }}>{product.id}</td>
+                  <td style={{ padding: '12px' }}>{product.name}</td>
+                  <td style={{ padding: '12px' }}>
+                    Rs. {product.ratePerUnit}
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    {product.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Products
