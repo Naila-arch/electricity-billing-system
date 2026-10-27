@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import './App.css'
 
@@ -8,36 +9,25 @@ import Invoices from './Pages/Invoices'
 import Products from './Pages/Products.jsx'
 import Reports from './Pages/Reports'
 import Settings from './Pages/Settings'
+import Login from './Login'
 
 function App() {
   const [activePage, setActivePage] = useState('Dashboard')
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   function showPage() {
-    if (activePage === 'Dashboard') {
-      return <Dashboard />
-    }
-
-    if (activePage === 'Customers') {
-      return <Customers />
-    }
-
-    if (activePage === 'Invoices') {
-      return <Invoices />
-    }
-
-    if (activePage === 'Products') {
-      return <Products />
-    }
-
-    if (activePage === 'Reports') {
-      return <Reports />
-    }
-
-    if (activePage === 'Settings') {
-      return <Settings />
-    }
+    if (activePage === 'Dashboard') return <Dashboard />
+    if (activePage === 'Customers') return <Customers />
+    if (activePage === 'Invoices') return <Invoices />
+    if (activePage === 'Products') return <Products />
+    if (activePage === 'Reports') return <Reports />
+    if (activePage === 'Settings') return <Settings />
 
     return <h1>Page not found</h1>
+  }
+
+  if (!isLoggedIn) {
+    return <Login onLogin={() => setIsLoggedIn(true)} />
   }
 
   return (
