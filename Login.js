@@ -6,8 +6,8 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
-  function handleLogin(e) {
-    e.preventDefault()
+  function handleLogin(event) {
+    event.preventDefault()
 
     if (!username.trim() || !password.trim()) {
       setError('Please enter username and password.')
@@ -23,20 +23,22 @@ function Login({ onLogin }) {
         <h1>Electricity Billing System</h1>
         <h2>Login</h2>
 
-        <label>Username</label>
+        <label htmlFor="username">Username</label>
         <input
+          id="username"
           type="text"
           placeholder="Enter username"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(event) => setUsername(event.target.value)}
         />
 
-        <label>Password</label>
+        <label htmlFor="password">Password</label>
         <input
+          id="password"
           type="password"
           placeholder="Enter password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(event) => setPassword(event.target.value)}
         />
 
         {error && <p style={{ color: 'red' }}>{error}</p>}

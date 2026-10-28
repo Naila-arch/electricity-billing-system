@@ -1,108 +1,198 @@
 
 import { useEffect, useState } from 'react'
+import {
+  getCustomers,
+  addCustomer,
+  updateCustomer,
+  deleteCustomer,
+} from './service.js'
 
-function Dashboard() {
+function Customers() {
   const [customers, setCustomers] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [name, setName] = useState('')
+  const [meterNumber, setMeterNumber] = useState('')
+  const [units, setUnits] = useState('')
+  const [status, setStatus] = useState('Unpaid')
+  const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  async function loadCustomers() {
+    try {
+      setError('')
+      const data = await getCustomers()
+      setCustomers(Array.isArray(data) ? data : [])
+    } catch (err) {
+      setError(err.message || 'Failed to load customers.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    fetch('http://localhost:5000/customers')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Customers data load nahi hua')
-        }
-
-        return response.json()
-      })
-      .then((data) => {
-        setCustomers(Array.isArray(data) ? data : [])
-        setLoading(false)
-      })
-      .catch((error) => {
-        console.error('Dashboard error:', error)
-        setError('Dashboard data load nahi ho saka.')
-        setLoading(false)
-      })
+    loadCustomers()
   }, [])
 
-  const totalCustomers = customers.length
+  function resetForm() {
+    setName('')
+    setMeterNumber('')
+    setUnits('')
+    setStatus('Unpaid')
+    setEditingId(null)
+    setError('')
+  }
 
-  // Electricity plans ki total tadaad
-  const totalProducts = 3
+  async function handleSubmit(e) {
+    e.preventDefault()
 
-  // Har customer ka ek invoice hai
-  const totalInvoices = totalCustomers
+    if (!name.trim()) {
+      setError('Please enter the customer name.')
+      return
+    }
 
-  const pendingPayments = customers.filter(
-    (customer) => customer.status?.toLowerCase() === 'unpaid'
-  ).length
+    const customer = {
+      customer_name: name.trim(),
+      meter_number: meterNumber.trim(),
+      units: units === '' ? 0 : Number(units),
+      status,
+    }
 
-  const paidBills = customers.filter(
-    (customer) => customer.status?.toLowerCase() === 'paid'
-  ).length
+    try {
+      setError('')
+
+      if (editingId !== null) {
+        await updateCustomer(editingId, customer)
+      } else {
+        await addCustomer(customer)
+      }
+
+      resetForm()
+      await loadCustomers()
+    } catch (err) {
+      setError(err.message || 'Failed to save customer.')
+    }
+  }
+
+  function handleEdit(customer) {
+    setEditingId(customer.id)
+    setName(customer.customer_name || '')
+    setMeterNumber(customer.meter_number || '')
+    setUnits(customer.units ?? '')
+    setStatus(customer.status || 'Unpaid')
+    setError('')
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Are you sure you want to delete this customer?')) {
+      return
+    }
+
+    try {
+      setError('')
+      await deleteCustomer(id)
+      await loadCustomers()
+    } catch (err) {
+      setError(err.message || 'Failed to delete customer.')
+    }
+  }
 
   return (
     <div>
-      <h1>Dashboard</h1>
-      <p>Welcome to Electricity Billing System</p>
+      <h1>Customers Management</h1>
+      <p>Add, edit, update, and delete customer records.</p>
 
-      {loading && <p>Loading dashboard...</p>}
+      {error && <p role="alert">{error}</p>}
 
-      {error && <p>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Customer Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
 
-      {!loading && !error && (
-        <>
-          <div className="dashboard-grid">
-            <div className="dashboard-box">
-              <h2>Total Customers</h2>
-              <p>{totalCustomers}</p>
-            </div>
+        <input
+          type="text"
+          placeholder="Meter Number"
+          value={meterNumber}
+          onChange={(e) => setMeterNumber(e.target.value)}
+        />
 
-            <div className="dashboard-box">
-              <h2>Total Products</h2>
-              <p>{totalProducts}</p>
-            </div>
+        <input
+          type="number"
+          min="0"
+          placeholder="Units Consumed"
+          value={units}
+          onChange={(e) => setUnits(e.target.value)}
+        />
 
-            <div className="dashboard-box">
-              <h2>Total Invoices</h2>
-              <p>{totalInvoices}</p>
-            </div>
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
+          <option value="Unpaid">Unpaid</option>
+          <option value="Paid">Paid</option>
+        </select>
 
-            <div className="dashboard-box">
-              <h2>Pending Payments</h2>
-              <p>{pendingPayments}</p>
-            </div>
-          </div>
+        <button type="submit">
+          {editingId !== null ? 'Update Customer' : 'Add Customer'}
+        </button>
 
-          <div className="dashboard-box">
-            <h2>Billing Summary</h2>
-            <p>Total customers: {totalCustomers}</p>
-            <p>Paid bills: {paidBills}</p>
-            <p>Unpaid bills: {pendingPayments}</p>
-          </div>
+        {editingId !== null && (
+          <button type="button" onClick={resetForm}>
+            Cancel
+          </button>
+        )}
+      </form>
 
-          <div className="dashboard-box">
-            <h2>Recent Customers</h2>
+      {loading ? (
+        <p>Loading customers...</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Serial No.</th>
+              <th>Customer ID</th>
+              <th>Customer Name</th>
+              <th>Meter Number</th>
+              <th>Units Consumed</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
 
-            {customers.length === 0 ? (
-              <p>No customers found.</p>
-            ) : (
-              [...customers]
-                .reverse()
-                .slice(0, 5)
-                .map((customer) => (
-                  <p key={customer.id}>
-                    {customer.id}. {customer.customer_name} —{' '}
-                    {customer.status}
-                  </p>
-                ))
-            )}
-          </div>
-        </>
+          <tbody>
+            {customers.map((customer, index) => (
+              <tr key={customer.id}>
+                <td>{index + 1}</td>
+                <td>{customer.id}</td>
+                <td>{customer.customer_name}</td>
+                <td>{customer.meter_number || '—'}</td>
+                <td>{customer.units ?? '—'}</td>
+                <td>{customer.status || 'Unpaid'}</td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(customer)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(customer.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   )
 }
 
-export default Dashboard
+export default Customers

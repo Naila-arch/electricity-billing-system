@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import './App.css'
 
+import Login from './Login.jsx'
 import Sidebar from './Components/Sidebar'
 import Dashboard from './Pages/Dashboard'
 import Customers from './Pages/Customers'
@@ -9,7 +10,6 @@ import Invoices from './Pages/Invoices'
 import Products from './Pages/Products.jsx'
 import Reports from './Pages/Reports'
 import Settings from './Pages/Settings'
-import Login from './Login'
 
 function App() {
   const [activePage, setActivePage] = useState('Dashboard')
@@ -36,7 +36,6 @@ function App() {
         activePage={activePage}
         setActivePage={setActivePage}
       />
-
       <main style={{ flex: 1, padding: '30px', minWidth: 0 }}>
         {showPage()}
       </main>

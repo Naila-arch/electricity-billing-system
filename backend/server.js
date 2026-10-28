@@ -1,9 +1,12 @@
+
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import pg from "pg";
 
+// Load environment variables
 dotenv.config({ path: "backend/.env" });
+dotenv.config();
 
 const { Pool } = pg;
 const app = express();
@@ -13,32 +16,39 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Database connection
-const pool = new Pool(
-  process.env.DATABASE_URL
-    ? {
-        connectionString: process.env.DATABASE_URL,
-        ssl:
-          process.env.DB_SSL === "true"
-            ? { rejectUnauthorized: false }
-            : false,
-      }
-    : {
-        host: process.env.DB_HOST,
-        port: Number(process.env.DB_PORT || 5432),
-        database: process.env.DB_NAME,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        ssl:
-          process.env.DB_SSL === "true"
-            ? { rejectUnauthorized: false }
-            : false,
-      }
-);
+// PostgreSQL database connection
+const databaseConfig = process.env.DATABASE_URL
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl:
+        process.env.DB_SSL === "true"
+          ? { rejectUnauthorized: false }
+          : false,
+    }
+  : {
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT || 5432),
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      ssl:
+        process.env.DB_SSL === "true"
+          ? { rejectUnauthorized: false }
+          : false,
+    };
+
+const pool = new Pool(databaseConfig);
+
+// Check database connection
+pool.on("error", (error) => {
+  console.error("Unexpected database error:", error.message);
+});
 
 // Home route
 app.get("/", (req, res) => {
-  res.json({ message: "Electricity Billing System API is running" });
+  res.json({
+    message: "Electricity Billing System API is running",
+  });
 });
 
 // Test database connection
@@ -52,9 +62,9 @@ app.get("/test-db", async (req, res) => {
     });
   } catch (error) {
     console.error("Database error:", error.message);
+
     res.status(500).json({
       error: "Database connection failed",
-      details: error.message,
     });
   }
 });
@@ -69,9 +79,9 @@ app.get("/customers", async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error("Get customers error:", error.message);
+
     res.status(500).json({
       error: "Could not get customers",
-      details: error.message,
     });
   }
 });
@@ -85,15 +95,17 @@ app.get("/customers/:id", async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Customer not found" });
+      return res.status(404).json({
+        error: "Customer not found",
+      });
     }
 
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Get customer error:", error.message);
+
     res.status(500).json({
       error: "Could not get customer",
-      details: error.message,
     });
   }
 });
@@ -101,7 +113,13 @@ app.get("/customers/:id", async (req, res) => {
 // Add customer
 app.post("/customers", async (req, res) => {
   try {
-    const { customer_name, meter_number, units, due_date, status } = req.body;
+    const {
+      customer_name,
+      meter_number,
+      units,
+      due_date,
+      status,
+    } = req.body;
 
     if (!customer_name || !meter_number) {
       return res.status(400).json({
@@ -126,9 +144,9 @@ app.post("/customers", async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error("Add customer error:", error.message);
+
     res.status(500).json({
       error: "Could not add customer",
-      details: error.message,
     });
   }
 });
@@ -136,7 +154,13 @@ app.post("/customers", async (req, res) => {
 // Update customer
 app.put("/customers/:id", async (req, res) => {
   try {
-    const { customer_name, meter_number, units, due_date, status } = req.body;
+    const {
+      customer_name,
+      meter_number,
+      units,
+      due_date,
+      status,
+    } = req.body;
 
     const result = await pool.query(
       `UPDATE public.customers
@@ -158,15 +182,17 @@ app.put("/customers/:id", async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Customer not found" });
+      return res.status(404).json({
+        error: "Customer not found",
+      });
     }
 
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Update customer error:", error.message);
+
     res.status(500).json({
       error: "Could not update customer",
-      details: error.message,
     });
   }
 });
@@ -180,15 +206,19 @@ app.delete("/customers/:id", async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Customer not found" });
+      return res.status(404).json({
+        error: "Customer not found",
+      });
     }
 
-    res.json({ message: "Customer deleted successfully" });
+    res.json({
+      message: "Customer deleted successfully",
+    });
   } catch (error) {
     console.error("Delete customer error:", error.message);
+
     res.status(500).json({
       error: "Could not delete customer",
-      details: error.message,
     });
   }
 });
