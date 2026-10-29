@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// PostgreSQL database connection
+// PostgreSQL configuration
 const databaseConfig = process.env.DATABASE_URL
   ? {
       connectionString: process.env.DATABASE_URL,
@@ -39,14 +39,15 @@ const databaseConfig = process.env.DATABASE_URL
 
 const pool = new Pool(databaseConfig);
 
-// Check database connection
+// Database error handling
 pool.on("error", (error) => {
-  console.error("Unexpected database error:", error.message);
+  console.error("Database error:", error.message);
 });
 
-// Home route
+// API health check
 app.get("/", (req, res) => {
   res.json({
+    success: true,
     message: "Electricity Billing System API is running",
   });
 });
@@ -57,13 +58,15 @@ app.get("/test-db", async (req, res) => {
     const result = await pool.query("SELECT NOW() AS time");
 
     res.json({
+      success: true,
       message: "Database connected successfully!",
       time: result.rows[0].time,
     });
   } catch (error) {
-    console.error("Database error:", error.message);
+    console.error("Database connection error:", error.message);
 
     res.status(500).json({
+      success: false,
       error: "Database connection failed",
     });
   }
